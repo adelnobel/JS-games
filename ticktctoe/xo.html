@@ -1,0 +1,474 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+	<meta name="author" content="Adel Ali" />
+
+	<title>Untitled 1</title>
+</head>
+
+
+
+<body>
+
+<style>
+table tr td
+{
+    border: 2px solid black;
+    cursor: pointer;
+    height: 90px;
+    text-align: center;
+    font-size: 70px;
+    width: 167px;
+}
+table tr td:hover
+{
+    border: 2px solid red;
+}
+
+</style>
+
+<script type="text/javascript">
+
+var symbols = new Array("X","O");
+
+var cells = [0,1,2];
+for(var x=0; x < 3 ; x++)
+{
+    cells[x] = new Array();
+    
+    for(var y = 0 ; y < 3 ; y++)
+    {
+        cells[x][y] = false;
+    }
+}
+
+function clicked(row,column)
+{
+    if(!cells[row][column])
+    {
+        if(write(row,column,symbols[1]))
+        {
+            dsbl();
+            setTimeout('comTurn()',1000);
+        }
+    }
+    else
+    {
+        alert("Already Checked!");
+    }    
+}
+
+function write(row,column,str)
+{
+    cells[row][column] = str;
+    document.getElementById(row+""+column).innerHTML = str;
+    if(gameEnd(row,column,str))
+    {
+        return false;
+    }
+    if(allChecked())
+        {
+            return false;
+        }
+    return true;
+}
+
+function comTurn()
+{
+    //console.log(row,column);
+    
+    var array = generateRow();
+    
+    //console.log(array);
+    
+    if(!cells[array[0]][array[1]])
+    {
+        if(!write(array[0],array[1],symbols[0]))
+        return 0;
+    }
+    else
+    {
+        if(!allChecked())
+        {
+            //console.log("Triggered!");
+            comTurn();
+        }
+    }
+    enbl();
+}
+
+function generateRow()
+{
+    var h = cells;
+    var i = 0;
+    
+    var row;
+    var column
+    
+    /**for(var t = 0;t < 3 ; t++)
+    {
+        switch (i)
+        {
+            case 0:**/
+            for(var tt = 0; tt < 2 ; tt++)
+            {
+                if((h[0][0] == h[0][1] && h[0][0] == symbols[tt] || h[0][0] == h[0][2] && h[0][2] == symbols[tt]) 
+                    || (h[0][1] == h[0][2] && h[0][1] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[0][o])
+                        {
+                            var array = new Array(0,o);
+                            //console.log("array");
+                            return array;
+                        } 
+                    }
+                }
+                if((h[0][0] == h[1][0] && h[0][0] == symbols[tt] || h[0][0] == h[2][0] && h[2][0] == symbols[tt]) 
+                    || (h[1][0] == h[2][0] && h[1][0] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[o][0])
+                        {
+                            var array = new Array(o,0);
+                            //console.log(array);
+                            return array;
+                        } 
+                    }                    
+                }
+            //case 1:
+                if((h[1][0] == h[1][1] && h[1][0] == symbols[tt] || h[1][0] == h[1][2] && h[1][2] == symbols[tt]) 
+                    || (h[1][1] == h[1][2] && h[1][1] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[1][o])
+                        {
+                            var array = new Array(1,o);
+                            //console.log(array);
+                            return array;
+                        } 
+                    }
+                }
+                if((h[0][1] == h[1][1] && h[0][1] == symbols[tt] || h[0][1] == h[2][1] && h[2][1] == symbols[tt]) 
+                    || (h[1][1] == h[2][1] && h[1][1] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[o][1])
+                        {
+                            var array = new Array(o,1);
+                            //console.log(array);
+                            return array;
+                        } 
+                    }                    
+                }
+            //case 2:
+                if((h[2][0] == h[2][1] && h[2][0] == symbols[tt] || h[2][0] == h[2][2] && h[2][2] == symbols[tt]) 
+                    || (h[2][1] == h[2][2] && h[2][1] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[2][o])
+                        {
+                            var array = new Array(2,o);
+                            //console.log(array);
+                            return array;
+                        } 
+                    }
+                }
+                
+                if((h[0][2] == h[1][2] && h[0][2] == symbols[tt] || h[0][2] == h[2][2] && h[2][2] == symbols[tt]) 
+                    || (h[1][2] == h[2][2] && h[1][2] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[o][2])
+                        {
+                            var array = new Array(o,2);
+                            //console.log(array);
+                            return array;
+                        } 
+                    }                    
+                }
+                // cissors
+                if((h[0][0] == h[1][1] && h[0][0] == symbols[tt] || h[0][0] == h[2][2] && h[2][2] == symbols[tt]) 
+                    || (h[1][1] == h[2][2] && h[1][1] == symbols[tt]))
+                {
+                    for(var o = 0;o < 3;o++)
+                    {
+                        if(!h[o][o])
+                        {
+                            var array = new Array(o,o);
+                            //console.log(array);
+                            return array;
+                        } 
+                    }                           
+                }
+                
+                if((h[0][2] == h[1][1] && h[0][2] == symbols[tt] || h[0][2] == h[2][0] && h[2][0] == symbols[tt]) 
+                    || (h[1][1] == h[2][0] && h[1][1] == symbols[tt]))
+                {
+                    if(!h[0][2])
+                    {
+                        var array = new Array(0,2);
+                        //console.log(array);
+                        return array;
+                    }
+                    if(!h[1][1])
+                    {
+                        var array = new Array(1,1);
+                        //console.log(array);
+                        return array;
+                    }
+                    if(!h[2][0])
+                    {
+                        var array = new Array(2,0);
+                        //console.log(array);
+                        return array;
+                    }
+                }
+            }
+        //}
+    //}
+    
+    if((h[0][0] ==  h[1][1] && h[1][1] != false ) || (h[1][1] == h[2][2] && h[1][1] != false))
+    {
+        for(var o = 0;o < 3;o++)
+        {
+            if(!h[o][o])
+            {
+                var array = new Array(o,o);
+                //console.log(array);
+                return array;
+            } 
+        }                           
+    }
+    
+    if((h[0][2] ==  h[1][1] && h[1][1] != false ) || (h[1][1] == h[2][0] && h[1][1] != false))
+    {
+        if(!h[0][2])
+        {
+            var array = new Array(0,2);
+            //console.log(array);
+            return array;
+        }
+        if(!h[1][1])
+        {
+            var array = new Array(1,1);
+            //console.log(array);
+            return array;
+        }
+        if(!h[2][0])
+        {
+            var array = new Array(2,0);
+            //console.log(array);
+            return array;
+        }
+    }
+    
+    if(!h[1][1])
+    {
+        row = 1;
+        column = 1;
+    }
+    else
+    {
+        row = Math.floor(Math.random() * 3);
+        column = Math.floor(Math.random() * 3);
+    }
+    
+    var array = new Array(row,column);
+    
+    return array;
+}
+
+function allChecked()
+{
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            if(!cells[x][y])
+            {
+                return false;   
+            }
+        }
+    }
+    document.getElementById("game").innerHTML = "NO WINNER!";
+    document.getElementById("btn").style.display = "";
+    return true;
+}
+
+function gameEnd(row,column,str)
+{
+    h = cells;
+    if(h[row][0] == str && h[row][1] == str && h[row][2] == str )
+    {
+        //console.log(h[row][0] , h[row][1] , h[row][2]);
+        //console.log(str);
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        for(var x = 0; x < 3; x++)
+        {
+            document.getElementById(row+""+x).style.color = "red";
+        }
+        return true;
+    }
+    if(h[0][column] == str && h[1][column] == str && h[2][column] == str)
+    {
+        //console.log(h[0][column],h[1][column],h[2][column])
+        //console.log(str);
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        for(var x = 0; x < 3; x++)
+        {
+            document.getElementById(x+""+column).style.color = "red";
+        }
+        
+        return true;
+    }
+
+    if(h[0][0] == str && h[1][1] == str && h[2][2] == str)
+    {
+        //console.log("First scissor!");
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        for(var x = 0; x < 3; x++)
+        {
+            document.getElementById(x+""+x).style.color = "red";
+        }
+        
+        return true;
+    }
+    if(h[0][2] == str && h[1][1] == str && h[2][0] == str)
+    {
+        //console.log("second scissor!");
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        document.getElementById('02').style.color = "red";
+        document.getElementById('11').style.color = "red";
+        document.getElementById('20').style.color = "red";
+        
+        return true;
+    }
+    return false;
+}
+
+function dsbl()
+{
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            document.getElementById(x+""+y).setAttribute('onclick',''); 
+        }
+    }
+}
+
+function enbl()
+{
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            if(document.getElementById(x+""+y).attachEvent)
+            {
+                document.getElementById(x+""+y).onclick = new Function("clicked('"+x+"',"+y+");")
+            }
+            else
+            {
+                document.getElementById(x+""+y).setAttribute('onclick','clicked('+x+", "+y+')'); 
+            }
+            //console.log(x+""+y);
+        }
+    }
+}
+
+function restart()
+{
+    cells = [0,1,2];
+    for(var x=0; x < 3 ; x++)
+    {
+        cells[x] = new Array();
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            cells[x][y] = false;
+        }
+    }
+    
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+                document.getElementById(x+""+y).innerHTML = "&nbsp;";
+                document.getElementById(x+""+y).style.color = "black";
+        }
+    }
+    enbl();
+    document.getElementById("btn").style.display = "none";
+    document.getElementById("game").innerHTML = "";
+}
+
+</script>
+
+
+<div style="text-align: center;">
+<table style="width: 501px; height: 500px;" align="center" border="0">
+    <tr>
+        <td id="00" onclick="clicked(0,0)">
+        &nbsp;
+        </td>
+        <td id="01" onclick="clicked(0,1)">
+        &nbsp;
+        </td>
+        <td id="02" onclick="clicked(0,2)">
+        &nbsp;
+        </td>
+    </tr>
+
+    <tr>
+        <td id="10" onclick="clicked(1,0)">
+        &nbsp;
+        </td>
+        <td id="11" onclick="clicked(1,1)">
+        &nbsp;
+        </td>
+        <td id="12" onclick="clicked(1,2)">
+        &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td id="20" onclick="clicked(2,0)">
+        &nbsp;
+        </td>
+        <td id="21" onclick="clicked(2,1)">
+        &nbsp;
+        </td>
+        <td id="22" onclick="clicked(2,2)">
+        &nbsp;
+        </td>
+    </tr>
+</table>
+
+
+<div id="game"></div>
+
+<button id="btn" style="display: none;" onclick="restart()">Play Again!</button>
+
+</div>
+
+</body>
+</html>

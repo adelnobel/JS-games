@@ -1,0 +1,270 @@
+<!DOCTYPE HTML>
+<head>
+	<meta http-equiv="content-type" content="text/html" />
+	<meta name="author" content="Adel Ali" />
+
+	<title>Untitled 1</title>
+</head>
+
+<body onkeydown="getKey(event)">
+
+<div style="text-align: center;width: 100%;">
+    <div style="margin: 0px auto;border: 1px solid black;width: 480px; height: 320px">
+            <canvas id="canvas" width="480" height="320" style="background-color: black;border: 1px solid black;">
+            </canvas>
+    </div>
+    <div>
+        <button onmousedown="initGame();this.style.display = 'none'">Start Game</button>
+    </div>
+</div>
+
+<script>
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var tempFlag = false;
+var adel;
+
+var paddle = new Object();
+paddle.x = (canvas.width / 2 ) - 100 / 2;
+paddle.img = new Image();
+paddle.img.src = "paddle.png";
+paddle.y = canvas.height - 20;
+paddle.width = 100;
+paddle.height = 15;
+paddle.speed = 5;
+
+
+paddle.moveRight = function()
+{
+    ctx.clearRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    if(paddle.x + paddle.width + paddle.speed < canvas.width)
+        paddle.x += paddle.speed;
+    //ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    paddle.draw();
+};
+
+paddle.moveLeft = function()
+{
+    ctx.clearRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    if(paddle.x - paddle.speed > 0)
+        paddle.x -= paddle.speed;
+    //ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    paddle.draw();
+};
+
+paddle.draw = function()
+{
+    //ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    ctx.drawImage(paddle.img, paddle.x, paddle.y, paddle.width, paddle.height);
+};
+
+
+var lowestAngle = 15;
+var highestAngle = 165;
+var angle = degreeToRadian(highestAngle - lowestAngle);
+var pixelAngle = angle / paddle.width;
+
+var ball = new Object();
+ball.currentX = canvas.width / 2;
+ball.currentY = canvas.height / 2;
+ball.img = new Image();
+ball.img.src = "ball4.png";
+ball.previousX = 0;
+ball.previousY = 0;
+ball.width = 13;
+ball.height = 13;
+ball.radius = ball.width / 2;
+ball.speed = 2;
+ball.speedX = 0;
+ball.speedY = 1;
+ball.draw = function()
+{
+    //ctx.fillRect(ball.currentX, ball.currentY, ball.width, ball.height);
+    ctx.drawImage(ball.img ,ball.currentX, ball.currentY, ball.width, ball.height);
+};
+
+var bricks = [];
+
+
+function initGame()
+{
+    adel =  setInterval('gameLoop()', 10);
+    paddle.draw();
+    ball.draw();
+    
+    drawBricks();
+}
+
+function initBricks()
+{
+    var offsetX;
+    var offsetY = 5;
+    var width = 60;
+    var height = 16;
+    var current = 0;
+    for(var y = 1; y <= 7; y++)
+    {
+        offsetX = 0;
+        for(var x = 1; x <= 8; x++)
+        {
+            var brick = new Object();
+            brick.img = new Image();
+            brick.img.src = "images/bricks_"+(current+1)+".png";
+            brick.width = width;
+            brick.height = height;
+            brick.x = offsetX;
+            brick.y = offsetY;
+            bricks[current] = brick;
+            offsetX += width + 2;
+            current++;
+        }
+        offsetY += height + 2;
+    }
+}
+
+function drawBricks()
+{
+    for(var x = 0; x < bricks.length ; x++)
+    {
+        ctx.drawImage(bricks[x].img , bricks[x].x, bricks[x].y, 60, 16);
+    }
+    
+}
+
+function checkBrickCollide(ballX, ballY)
+{
+
+    for(var x = 0; x < bricks.length ; x++)
+    {
+        var brick = bricks[x];        
+        //xDistance = Math.abs(ballX - brick.x - brick.width / 2);
+        xDistance = Math.abs(ballX + ball.radius - brick.x - brick.width / 2);
+        yDistance = Math.abs(ballY + ball.radius - brick.y - brick.height / 2);
+        
+        
+        cornerDistance_sq = Math.pow( xDistance - brick.width / 2 , 2 ) + Math.pow(yDistance - brick.height / 2, 2);
+        if(tempFlag)
+        {
+                console.log("Src : " + brick.img.src ," X Distance: "+ xDistance, " Y Distance: " + yDistance , " Corner distance: " + cornerDistance_sq)
+        }
+        
+        if(yDistance > (brick.height / 2 + ball.radius) )
+        {
+            continue;
+        }
+        
+        if(xDistance > (brick.width / 2 + ball.radius) )
+        {
+            continue;
+        }
+        
+        if(xDistance <= brick.width / 2)
+        {
+            bricks.splice(x, 1);
+            return true;
+        }
+        if(yDistance <= brick.height / 2)
+        {
+            bricks.splice(x, 1);
+            return true;
+        }
+        
+        //cornerDistance_sq = Math.pow( xDistance - brick.width / 2 , 2 ) + Math.pow(yDistance - brick.height / 2, 2);
+        
+        if( cornerDistance_sq <= Math.pow(ball.radius , 2) )
+        {
+            bricks.splice(x, 1);
+            return true;
+        }
+    }
+    return false;
+}
+
+
+function gameLoop()
+{
+    if(ball.currentY <= 0) //If ball hits the top
+    {
+        ball.speedY = -ball.speedY;
+        //ball.speedX = -ball.speedX;
+        //console.log("ball hit the top!");
+    }
+    else if(ball.currentX <= 0 || ball.currentX + ball.width >= canvas.width) //If ball hits the left or right bound
+    {
+        //console.log("ball hit the Left Or RIGHT!");
+        ball.speedX = -ball.speedX;
+    }
+    
+        
+    else if(ball.currentY > paddle.y + paddle.height)
+    {
+        clearInterval(adel);
+        alert("You Lost!");
+    }
+    
+    else if( ( ball.currentY + ball.height >= paddle.y ) && (ball.currentX >= paddle.x && ball.currentX < paddle.x + paddle.width ) )
+    {
+        //console.log(ball.currentY , paddle.y, paddle.height, paddle.y - paddle.height);
+        
+        //console.log("Ball X:"+ ball.currentX + " Paddle X:"+ paddle.x);
+        
+        ball.currentY = ball.previousY;
+        ball.currentX = ball.previousX;
+        angle = Math.PI - ( (ball.currentX - paddle.x) * pixelAngle + degreeToRadian(lowestAngle) ) ;
+        ball.speedY = -(Math.sin(angle));
+        ball.speedX = Math.cos(angle);
+        
+        
+    }
+    
+    else 
+    {
+        if(checkBrickCollide(ball.currentX, ball.currentY))
+        {
+            ball.currentY = ball.previousY;
+            ball.currentX = ball.previousX;
+                      
+            //ball.speedX = -ball.speedX;
+            ball.speedY = -ball.speedY;
+        }
+    }
+
+    ball.previousY = ball.currentY;
+    ball.previousX = ball.currentX;
+    
+    //console.log(ball.currentY);
+
+    ball.currentY += ball.speed * ball.speedY;
+    ball.currentX += ball.speed * ball.speedX;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    paddle.draw();
+    ball.draw();
+    drawBricks();
+}
+
+function getKey(evt)
+{
+    //console.log(evt);
+    if(evt.keyCode == 39) //Right
+    {
+        paddle.moveRight();
+    }
+    else if(evt.keyCode == 37)  //Left
+    {
+        paddle.moveLeft();
+    }
+}
+
+function degreeToRadian(Angle)
+{
+    return Math.PI / 180 * Angle;
+}
+
+initBricks();
+
+</script>
+
+</body>
+</html>

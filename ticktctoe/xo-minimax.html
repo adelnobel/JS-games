@@ -1,0 +1,460 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+	<meta name="author" content="Adel Ali" />
+
+	<title>Untitled 1</title>
+</head>
+
+
+
+<body>
+
+<style>
+table tr td
+{
+    border: 2px solid black;
+    cursor: pointer;
+    height: 90px;
+    text-align: center;
+    font-size: 70px;
+    width: 167px;
+}
+table tr td:hover
+{
+    border: 2px solid red;
+}
+
+</style>
+
+<script type="text/javascript">
+
+var symbols = new Array("X","O");
+
+var cells = [0,1,2];
+for(var x=0; x < 3 ; x++)
+{
+    cells[x] = new Array();
+    for(var y = 0 ; y < 3 ; y++)
+    {
+        cells[x][y] = false;
+    }
+}
+
+function clicked(row,column)
+{
+    if(!cells[row][column])
+    {
+        if(write(row,column,symbols[1]))
+        {
+            dsbl();
+            setTimeout('comTurn()',1000);
+        }
+    }
+    else
+    {
+        alert("Already Checked!");
+    }    
+}
+
+function write(row,column,str)
+{
+    cells[row][column] = str;
+    document.getElementById(row+""+column).innerHTML = str;
+    if(gameEnd(row,column,str))
+    {
+        return false;
+    }
+    if(allChecked())
+        {
+            return false;
+        }
+    return true;
+}
+
+function comTurn()
+{
+    //console.log(row,column);
+    
+    var array = generateRow();
+    
+    //console.log(array);
+    
+    if(!cells[array[0]][array[1]])
+    {
+        if(!write(array[0],array[1],symbols[0]))
+        return 0;
+    }
+    else
+    {
+        if(!allChecked())
+        {
+            //console.log("Triggered!");
+            comTurn();
+        }
+    }
+    enbl();
+}
+
+function isTerminal(curState){
+    
+    if(curState[0][0] == 1 || curState[0][0] == 2){
+        if(curState[0][0] == curState[1][1] && curState[1][1] == curState[2][2]){
+            return true;
+        }
+    }
+    
+    if(curState[0][2] == 1 || curState[0][2] == 2){
+        if(curState[0][2] == curState[1][1] && curState[1][1] == curState[2][0]){
+            return true;
+        }
+    }
+    
+    var totFree = 9;
+    
+    for(var x = 0; x < 3; x++){
+        for(var y = 0; y < 3; y++){
+            if(curState[x][y] != 0){
+                totFree--;
+            }
+        }
+        if(curState[x][0] == 1 || curState[x][0] == 2){
+            if(curState[x][0] == curState[x][1] && curState[x][1] == curState[x][2]){
+                return true;
+            }
+        }
+        if(curState[0][x] == 1 || curState[0][x] == 2){
+            if(curState[0][x] == curState[1][x] && curState[1][x] == curState[2][x]){
+                return true;
+            }
+        }
+    }
+    
+    if(totFree == 0){
+        return true;
+    }
+    return false;
+}
+
+function utility(curState)
+{
+    if(curState[0][0] == 1 || curState[0][0] == 2){
+        if(curState[0][0] == curState[1][1] && curState[1][1] == curState[2][2]){
+            if(curState[0][0] == 2){
+                return 1;
+            }else{
+                return -1;
+            }
+        }
+    }
+    
+    if(curState[0][2] == 1 || curState[0][2] == 2){
+        if(curState[0][2] == curState[1][1] && curState[1][1] == curState[2][0]){
+            if(curState[0][2] == 2){
+                return 1;
+            }else{
+                return -1;
+            }
+        }
+    }
+    
+    for(var x = 0; x < 3; x++){
+        if(curState[x][0] == 1 || curState[x][0] == 2){
+            if(curState[x][0] == curState[x][1] && curState[x][1] == curState[x][2]){
+                if(curState[x][0] == 2){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            }
+        }
+        if(curState[0][x] == 1 || curState[0][x] == 2){
+            if(curState[0][x] == curState[1][x] && curState[1][x] == curState[2][x]){
+                if(curState[0][x] == 2){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            }
+        }
+    }
+    
+    return 0;//Draw!
+}
+
+function mini(curState){
+    if(isTerminal(curState)){
+       return utility(curState);
+    }
+    var best = 10000000;
+    for(var x = 0; x < 3; x++){
+        for(var y = 0; y < 3; y++){
+            if(curState[x][y] == 0){
+                var newState = curState;
+                newState[x][y] = 1;
+                var curVal = maxi(newState);
+                curState[x][y] = 0;
+                if(curVal < best){
+                    best = curVal;
+                }
+            }
+        }
+    }
+    
+    return best;
+}
+
+function maxi(curState){
+    if(isTerminal(curState)){
+       return utility(curState);
+    }
+    var best = -1000000;
+    for(var x = 0; x < 3; x++){
+        for(var y = 0; y < 3; y++){
+            if(curState[x][y] == 0){
+                var newState = curState;
+                newState[x][y] = 2;
+                var curVal = mini(newState);
+                curState[x][y] = 0;
+                if(curVal > best){
+                    best = curVal;
+                }
+            }
+        }
+    }
+    
+    return best;
+}
+
+function decision(){
+    
+    var curState = [[0, 0, 0],[0, 0, 0], [0, 0, 0]];
+    
+    var ret;
+    
+    var best = -10000000;
+    
+    for(var x = 0;  x < 3; x++){
+        for(var y = 0; y < 3; y++){
+            var str = document.getElementById(x+""+y).innerHTML;
+            if(str == "X"){
+                curState[x][y] = 2;
+            }else if(str == "O"){
+                curState[x][y] = 1;
+            }
+        }
+    }
+    
+    for(var x = 0;  x < 3; x++){
+        for(var y = 0; y < 3; y++){
+            if(curState[x][y] == 0){
+                var newState = curState;
+                newState[x][y] = 2;
+                var curVal = mini(newState);
+                curState[x][y] = 0;
+                if(curVal > best){
+                    best = curVal;
+                    ret = new Array(x,y);
+                }
+            }
+        }
+    }
+    
+    return ret;
+    
+}
+
+function generateRow()
+{
+    var array = decision();
+    
+    return array;
+}
+
+function allChecked()
+{
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            if(!cells[x][y])
+            {
+                return false;   
+            }
+        }
+    }
+    document.getElementById("game").innerHTML = "NO WINNER!";
+    document.getElementById("btn").style.display = "";
+    return true;
+}
+
+function gameEnd(row,column,str)
+{
+    h = cells;
+    if(h[row][0] == str && h[row][1] == str && h[row][2] == str )
+    {
+        //console.log(h[row][0] , h[row][1] , h[row][2]);
+        //console.log(str);
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        for(var x = 0; x < 3; x++)
+        {
+            document.getElementById(row+""+x).style.color = "red";
+        }
+        return true;
+    }
+    if(h[0][column] == str && h[1][column] == str && h[2][column] == str)
+    {
+        //console.log(h[0][column],h[1][column],h[2][column])
+        //console.log(str);
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        for(var x = 0; x < 3; x++)
+        {
+            document.getElementById(x+""+column).style.color = "red";
+        }
+        
+        return true;
+    }
+
+    if(h[0][0] == str && h[1][1] == str && h[2][2] == str)
+    {
+        //console.log("First scissor!");
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        for(var x = 0; x < 3; x++)
+        {
+            document.getElementById(x+""+x).style.color = "red";
+        }
+        
+        return true;
+    }
+    if(h[0][2] == str && h[1][1] == str && h[2][0] == str)
+    {
+        //console.log("second scissor!");
+        document.getElementById("game").innerHTML = str+" Wins";
+        dsbl();
+        document.getElementById("btn").style.display = "";
+        
+        document.getElementById('02').style.color = "red";
+        document.getElementById('11').style.color = "red";
+        document.getElementById('20').style.color = "red";
+        
+        return true;
+    }
+    return false;
+}
+
+function dsbl()
+{
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            document.getElementById(x+""+y).setAttribute('onclick',''); 
+        }
+    }
+}
+
+function enbl()
+{
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            if(document.getElementById(x+""+y).attachEvent)
+            {
+                document.getElementById(x+""+y).onclick = new Function("clicked('"+x+"',"+y+");")
+            }
+            else
+            {
+                document.getElementById(x+""+y).setAttribute('onclick','clicked('+x+", "+y+')'); 
+            }
+            //console.log(x+""+y);
+        }
+    }
+}
+
+function restart()
+{
+    cells = [0,1,2];
+    for(var x=0; x < 3 ; x++)
+    {
+        cells[x] = new Array();
+        for(var y = 0 ; y < 3 ; y++)
+        {
+            cells[x][y] = false;
+        }
+    }
+    
+    for(var x = 0; x < 3 ; x++)
+    {
+        for(var y = 0 ; y < 3 ; y++)
+        {
+                document.getElementById(x+""+y).innerHTML = "&nbsp;";
+                document.getElementById(x+""+y).style.color = "black";
+        }
+    }
+    enbl();
+    document.getElementById("btn").style.display = "none";
+    document.getElementById("game").innerHTML = "";
+}
+
+</script>
+
+
+<div style="text-align: center;">
+<table style="width: 501px; height: 500px;" align="center" border="0">
+    <tr>
+        <td id="00" onclick="clicked(0,0)">
+        &nbsp;
+        </td>
+        <td id="01" onclick="clicked(0,1)">
+        &nbsp;
+        </td>
+        <td id="02" onclick="clicked(0,2)">
+        &nbsp;
+        </td>
+    </tr>
+
+    <tr>
+        <td id="10" onclick="clicked(1,0)">
+        &nbsp;
+        </td>
+        <td id="11" onclick="clicked(1,1)">
+        &nbsp;
+        </td>
+        <td id="12" onclick="clicked(1,2)">
+        &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td id="20" onclick="clicked(2,0)">
+        &nbsp;
+        </td>
+        <td id="21" onclick="clicked(2,1)">
+        &nbsp;
+        </td>
+        <td id="22" onclick="clicked(2,2)">
+        &nbsp;
+        </td>
+    </tr>
+</table>
+
+
+<div id="game"></div>
+
+<button id="btn" style="display: none;" onclick="restart()">Play Again!</button>
+
+</div>
+
+</body>
+</html>
