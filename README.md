@@ -19,3 +19,8 @@ Tick-tac-toe
 * xo-minimax.html
     * This is the same as above in almost everything except for one important thing. The algorithm used by the computer is **Mini Max**. The computer in this version is **IMPOSSIBLE** to defeat! You can try it on this [link](http://www.amusingvidz.com/xo-minimax.html)
 
+
+License
+------
+
+**MIT**
